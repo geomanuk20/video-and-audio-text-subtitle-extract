@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Convert your videos to high-quality audio files or transcribes them to multi-language subtitles instantly. Supports MP3, WAV, SRT, and WebVTT.">
+    <title>SonicShift | Premium Video to Audio & Subtitle Converter</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome for Premium Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Static stylesheet -->
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'converter_app/style.css' %}">
+</head>
+<body>
+    <!-- Background Glow Elements -->
+    <div class="glow-bg-1"></div>
+    <div class="glow-bg-2"></div>
+
+    <div class="app-container">
+        <!-- Header Section -->
+        <header class="app-header">
+            <div class="logo">
+                <i class="fa-solid fa-wand-magic-sparkles logo-icon"></i>
+                <h1>Sonic<span>Shift</span></h1>
+            </div>
+            <p class="subtitle">Extract studio-grade audio or generate accurate subtitles from video files.</p>
+        </header>
+
+        <!-- Main Workspace -->
+        <main class="app-main">
+            <!-- Left Panel: Upload & Converter Setup -->
+            <section class="converter-panel">
+                <!-- Tab Controls -->
+                <div class="tab-container">
+                    <button type="button" class="tab-btn active" id="tabAudioBtn" data-type="audio">
+                        <i class="fa-solid fa-music"></i> Extract Audio
+                    </button>
+                    <button type="button" class="tab-btn" id="tabSubtitleBtn" data-type="subtitle">
+                        <i class="fa-solid fa-closed-captioning"></i> Generate Subtitles
+                    </button>
+                </div>
+
+                <form id="uploadForm" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <!-- Hidden input to track conversion type -->
+                    <input type="hidden" name="type" id="conversionTypeInput" value="audio">
+
+                    <!-- Drag & Drop Zone -->
+                    <div class="drop-zone" id="dropZone">
+                        <input type="file" name="video" id="videoInput" accept=".mp4,.avi,.mov,.mkv,.webm,.flv,.wmv" required>
+                        <div class="drop-zone-content">
+                            <div class="icon-wrapper">
+                                <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+                            </div>
+                            <h3>Drag & drop your video here</h3>
+                            <p class="file-limits">Supports MP4, MOV, AVI, MKV, WebM (Max 5GB)</p>
+                            <button type="button" class="btn btn-secondary select-btn" id="selectFileBtn">Browse Files</button>
+                        </div>
+                        
+                        <!-- Selected File Preview State -->
+                        <div class="file-details-preview" id="filePreview" style="display: none;">
+                            <i class="fa-solid fa-file-video file-icon"></i>
+                            <div class="file-info-text">
+                                <span class="file-name" id="fileNameText">video_file.mp4</span>
+                                <span class="file-size" id="fileSizeText">0.00 MB</span>
+                            </div>
+                            <button type="button" class="remove-file-btn" id="removeFileBtn" title="Remove video">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Setup Parameters Card -->
+                    <div class="settings-card">
+                        <h2 class="section-title"><i class="fa-solid fa-sliders"></i> Process Settings</h2>
+                        
+                        <!-- Audio Settings Form Panel -->
+                        <div class="settings-grid" id="audioSettingsGrid">
+                            <!-- Format Select -->
+                            <div class="input-group">
+                                <label for="formatSelect">Audio Format</label>
+                                <div class="select-wrapper">
+                                    <select name="format" id="formatSelect">
+                                        <option value="mp3" selected>MP3 (Standard)</option>
+                                        <option value="wav">WAV (Lossless)</option>
+                                        <option value="aac">AAC (Advanced)</option>
+                                        <option value="m4a">M4A (Apple AAC)</option>
+                                    </select>
+                                    <i class="fa-solid fa-chevron-down select-chevron"></i>
+                                </div>
+                            </div>
+
+                            <!-- Bitrate Select -->
+                            <div class="input-group">
+                                <label for="bitrateSelect">Quality (Bitrate)</label>
+                                <div class="select-wrapper">
+                                    <select name="bitrate" id="bitrateSelect">
+                                        <option value="320">320 kbps (Studio)</option>
+                                        <option value="192" selected>192 kbps (High)</option>
+                                        <option value="128">128 kbps (Standard)</option>
+                                    </select>
+                                    <i class="fa-solid fa-chevron-down select-chevron"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Subtitle Settings Form Panel -->
+                        <div class="settings-grid" id="subtitleSettingsGrid" style="display: none;">
+                            <!-- Spoken Language Select -->
+                            <div class="input-group">
+                                <label for="languageSelect">Spoken Language</label>
+                                <div class="select-wrapper">
+                                    <select name="language" id="languageSelect">
+                                        <option value="en-US" selected>English (US)</option>
+                                        <option value="en-GB">English (UK)</option>
+                                        <option value="es-ES">Spanish (Spain)</option>
+                                        <option value="es-MX">Spanish (Mexico)</option>
+                                        <option value="fr-FR">French (France)</option>
+                                        <option value="de-DE">German (Germany)</option>
+                                        <option value="zh-CN">Chinese (Simplified)</option>
+                                        <option value="zh-TW">Chinese (Traditional)</option>
+                                        <option value="ar-SA">Arabic (Saudi Arabia)</option>
+                                        <option value="pt-BR">Portuguese (Brazil)</option>
+                                        <option value="it-IT">Italian (Italy)</option>
+                                        <option value="ja-JP">Japanese (Japan)</option>
+                                        <option value="ru-RU">Russian (Russia)</option>
+                                        <!-- Indian Languages -->
+                                        <option value="hi-IN">Hindi (India)</option>
+                                        <option value="bn-IN">Bengali (India)</option>
+                                        <option value="ta-IN">Tamil (India)</option>
+                                        <option value="te-IN">Telugu (India)</option>
+                                        <option value="mr-IN">Marathi (India)</option>
+                                        <option value="gu-IN">Gujarati (India)</option>
+                                        <option value="kn-IN">Kannada (India)</option>
+                                        <option value="ml-IN">Malayalam (India)</option>
+                                        <option value="pa-IN">Punjabi (India)</option>
+                                        <option value="ur-IN">Urdu (India)</option>
+                                        <option value="or-IN">Odia (India)</option>
+                                        <option value="sa-IN">Sanskrit (India)</option>
+                                    </select>
+                                    <i class="fa-solid fa-chevron-down select-chevron"></i>
+                                </div>
+                            </div>
+
+                            <!-- Subtitle File Format Select -->
+                            <div class="input-group">
+                                <label for="subFormatSelect">Subtitle Format</label>
+                                <div class="select-wrapper">
+                                    <select name="sub_format" id="subFormatSelect">
+                                        <option value="srt" selected>SubRip (.srt)</option>
+                                        <option value="vtt">WebVTT (.vtt)</option>
+                                    </select>
+                                    <i class="fa-solid fa-chevron-down select-chevron"></i>
+                                </div>
+                            </div>
+
+                            <!-- Translate subtitles to other languages select -->
+                            <div class="input-group" style="grid-column: span 2; margin-top: 0.25rem;">
+                                <label for="translationTargetSelect">Translate Subtitles To</label>
+                                <div class="select-wrapper">
+                                    <select name="translation_target" id="translationTargetSelect">
+                                        <option value="none" selected>None (Keep original language)</option>
+                                        <option value="en">English</option>
+                                        <!-- Indian Languages -->
+                                        <option value="hi">Hindi (India)</option>
+                                        <option value="ml">Malayalam (India)</option>
+                                        <option value="ta">Tamil (India)</option>
+                                        <option value="te">Telugu (India)</option>
+                                        <option value="kn">Kannada (India)</option>
+                                        <option value="bn">Bengali (India)</option>
+                                        <option value="mr">Marathi (India)</option>
+                                        <option value="gu">Gujarati (India)</option>
+                                        <option value="pa">Punjabi (India)</option>
+                                        <option value="ur">Urdu (India)</option>
+                                        <!-- Other Major Languages -->
+                                        <option value="es">Spanish</option>
+                                        <option value="fr">French</option>
+                                        <option value="de">German</option>
+                                        <option value="ar">Arabic</option>
+                                        <option value="ja">Japanese</option>
+                                        <option value="zh-CN">Chinese (Simplified)</option>
+                                        <option value="ru">Russian</option>
+                                    </select>
+                                    <i class="fa-solid fa-chevron-down select-chevron"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" class="btn btn-primary convert-btn" id="convertBtn" disabled>
+                            <span id="convertBtnText">Convert to Audio</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Processing & Progress Widget -->
+                <div class="progress-card" id="progressCard" style="display: none;">
+                    <div class="progress-header">
+                        <span class="status-label" id="statusLabel">Uploading video...</span>
+                        <span class="percentage-label" id="percentageLabel">0%</span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-fill" id="progressBarFill"></div>
+                    </div>
+                    <div class="spinner-container" id="spinnerContainer" style="display: none;">
+                        <i class="fa-solid fa-circle-notch spinner"></i>
+                        <span id="spinnerText">Processing media stream...</span>
+                    </div>
+                </div>
+
+                <!-- Live Successful Result Widget -->
+                <div class="result-card" id="resultCard" style="display: none;">
+                    <!-- Audio Output State -->
+                    <div id="audioResultWrapper">
+                        <div class="success-header">
+                            <i class="fa-solid fa-circle-check success-icon"></i>
+                            <div>
+                                <h3>Audio Extraction Completed!</h3>
+                                <p id="resultFileName">audio_file.mp3</p>
+                            </div>
+                        </div>
+                        <div class="result-details">
+                            <div class="detail-badge"><i class="fa-regular fa-clock"></i> <span id="resultDuration">00:00</span></div>
+                            <div class="detail-badge"><i class="fa-solid fa-music"></i> <span id="resultFormat">MP3</span></div>
+                            <div class="detail-badge"><i class="fa-solid fa-gauge-high"></i> <span id="resultBitrate">192kbps</span></div>
+                        </div>
+                        <div class="audio-player-container">
+                            <audio id="resultAudioPlayer" controls></audio>
+                        </div>
+                    </div>
+
+                    <!-- Subtitle Output State -->
+                    <div id="subtitleResultWrapper" style="display: none;">
+                        <div class="success-header">
+                            <i class="fa-solid fa-circle-check success-icon"></i>
+                            <div>
+                                <h3>Subtitles Generated!</h3>
+                                <p id="resultSubFileName">subtitle_file.srt</p>
+                            </div>
+                        </div>
+                        <div class="result-details">
+                            <div class="detail-badge"><i class="fa-regular fa-clock"></i> <span id="resultSubDuration">00:00</span></div>
+                            <div class="detail-badge"><i class="fa-solid fa-closed-captioning"></i> <span id="resultSubFormat">SRT</span></div>
+                            <div class="detail-badge"><i class="fa-solid fa-language"></i> <span id="resultSubLanguage">English</span></div>
+                        </div>
+
+                        <!-- Video Player Preview -->
+                        <div class="video-preview-container" id="resultVideoContainer" style="display: none; margin-top: 1.25rem; margin-bottom: 1.25rem;">
+                            <video id="resultVideoPlayer" controls style="width:100%; border-radius:12px; max-height: 320px; background: #000;"></video>
+                        </div>
+                        
+                        <!-- Scrollable text preview -->
+                        <div class="subtitle-preview-box">
+                            <div class="preview-box-header">
+                                <span>Subtitles Preview</span>
+                                <button type="button" class="copy-btn" id="copySubtitlesBtn" title="Copy to clipboard">
+                                    <i class="fa-regular fa-copy"></i> Copy
+                                </button>
+                            </div>
+                            <pre class="subtitle-text-content" id="subtitlePreviewText"></pre>
+                        </div>
+
+                        <!-- Extracted Audio Player -->
+                        <div class="audio-player-container" id="subAudioPlayerContainer" style="margin-top: 1.25rem; display: none;">
+                            <p style="margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-secondary); display: flex; align-items: center; gap: 0.5rem; font-weight: 600;">
+                                <i class="fa-solid fa-music" style="color: var(--accent-color);"></i> Extracted Audio (MP3)
+                            </p>
+                            <audio id="resultSubAudioPlayer" controls></audio>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <a href="#" class="btn btn-primary download-btn" id="downloadBtn" download>
+                            <i class="fa-solid fa-download"></i> Download File
+                        </a>
+                        <a href="#" class="btn btn-secondary" id="downloadAudioBtn" download style="display: none;">
+                            <i class="fa-solid fa-file-audio"></i> Download MP3
+                        </a>
+                        <button type="button" class="btn btn-secondary reset-btn" id="resetBtn">
+                            Convert Another
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Panel: Conversion History -->
+            <section class="history-panel">
+                <div class="history-header">
+                    <h2 class="section-title"><i class="fa-solid fa-history"></i> Recent Conversions</h2>
+                    <button id="refreshHistoryBtn" class="refresh-btn" title="Refresh history">
+                        <i class="fa-solid fa-rotate"></i>
+                    </button>
+                </div>
+                
+                <div class="history-list-wrapper">
+                    <!-- Loading History State -->
+                    <div class="history-empty" id="historyLoading">
+                        <i class="fa-solid fa-spinner fa-spin empty-icon"></i>
+                        <p>Loading conversion log...</p>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div class="history-empty" id="historyEmpty" style="display: none;">
+                        <i class="fa-solid fa-wand-magic empty-icon"></i>
+                        <p>No files processed yet.</p>
+                        <p class="sub-text">Upload a video to see your items here.</p>
+                    </div>
+
+                    <!-- History List Container -->
+                    <div class="history-list" id="historyList" style="display: none;">
+                        <!-- Dynamic content goes here -->
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Subtitle Preview Modal Popup -->
+        <div class="modal-overlay" id="subtitleModal" style="display: none;">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <h3><i class="fa-solid fa-closed-captioning"></i> Subtitle File View</h3>
+                    <button type="button" class="close-modal-btn" id="closeModalBtn">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <h4 id="modalFileTitle">video_subtitles.srt</h4>
+                    
+                    <!-- Video Player Preview -->
+                    <div class="video-preview-container" id="modalVideoContainer" style="display: none; margin-top: 0.5rem; margin-bottom: 0.5rem;">
+                        <video id="modalVideoPlayer" controls style="width:100%; border-radius:12px; max-height: 240px; background: #000;"></video>
+                    </div>
+
+                    <div class="subtitle-preview-box">
+                        <div class="preview-box-header">
+                            <span>File Contents</span>
+                            <button type="button" class="copy-btn" id="modalCopyBtn">
+                                <i class="fa-regular fa-copy"></i> Copy
+                            </button>
+                        </div>
+                        <pre class="subtitle-text-content" id="modalSubtitlesText"></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="app-footer-nav">
+            <p>&copy; 2026 SonicShift. Powered by Django, MoviePy, and SpeechRecognition.</p>
+        </footer>
+    </div>
+
+    <!-- Static JS file -->
+    <script src="{% static 'converter_app/main.js' %}"></script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+# Virtual Environment
+.venv/
+venv/
+ENV/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# macOS
+.DS_Store
+
+# SQLite database
+*.sqlite3
+
+# Uploaded/generated media
+media/
+
+# Node/React (if any)
+node_modules/
+dist/
+build/
