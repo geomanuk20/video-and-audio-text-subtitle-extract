@@ -21,3 +21,6 @@ media/
 node_modules/
 dist/
 build/
+
+# Collected static files
+staticfiles/
